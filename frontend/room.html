@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LiveMentor - Session Room</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Live Session</h2>
+  <div class="video-grid">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
+  </div>
+  <button id="startBtn">Start Call</button>
+  <button id="hangupBtn">Hang Up</button>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/webrtc-client.js"></script>
+</body>
+</html>
