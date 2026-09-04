@@ -2,12 +2,16 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 from models import db, User, Session
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'change-this-secret'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-# IMPORTANT: replace 'yourpassword' below with the root password you set in MySQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/livementor'
+db_password = os.getenv('DB_PASSWORD')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://root:{db_password}@localhost/livementor'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)

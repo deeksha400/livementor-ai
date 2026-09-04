@@ -5,3 +5,4 @@ python-socketio
 eventlet
 flask-sqlalchemy
 pymysql
+python-dotenv
