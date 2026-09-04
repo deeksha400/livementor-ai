@@ -3,3 +3,5 @@ flask-socketio
 flask-cors
 python-socketio
 eventlet
+flask-sqlalchemy
+pymysql

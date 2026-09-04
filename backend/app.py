@@ -1,13 +1,24 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
+from models import db, User, Session
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'change-this-secret'
+
+# IMPORTANT: replace 'yourpassword' below with the root password you set in MySQL
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/livementor'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+    print("Database tables created successfully!")
+
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Track who is in which room
 rooms = {}
 
 @socketio.on('join')
@@ -19,7 +30,6 @@ def on_join(data):
 
 @socketio.on('signal')
 def on_signal(data):
-    # Relay WebRTC offer/answer/ICE candidates to the other peer in the room
     emit('signal', data, room=data['room'], include_self=False)
 
 @socketio.on('leave')
