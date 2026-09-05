@@ -73,6 +73,15 @@ socket.on("signal", async (data) => {
 });
 
 function hangUp() {
-  if (peerConnection) peerConnection.close();
+  if (peerConnection) {
+    peerConnection.close();
+    peerConnection = null;
+  }
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+  localVideo.srcObject = null;
+  remoteVideo.srcObject = null;
+  isCaller = false;
   socket.emit("leave", { room, sid_name: myId });
 }

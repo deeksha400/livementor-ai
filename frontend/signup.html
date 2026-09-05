@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LiveMentor - Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Create Account</h2>
+  <form id="signupForm">
+    <input type="text" id="name" placeholder="Full Name" required><br>
+    <input type="email" id="email" placeholder="Email" required><br>
+    <select id="role">
+      <option value="student">Student</option>
+      <option value="tutor">Tutor</option>
+    </select><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Sign Up</button>
+  </form>
+  <p id="message"></p>
+  <p>Already have an account? <a href="login.html">Log in</a></p>
+
+  <script>
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const role = document.getElementById('role').value;
+      const password = document.getElementById('password').value;
+
+      const response = await fetch('http://127.0.0.1:5000/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, role, password })
+      });
+
+      const data = await response.json();
+      const messageEl = document.getElementById('message');
+
+      if (response.ok) {
+        messageEl.textContent = 'Signup successful! Redirecting to login...';
+        messageEl.style.color = 'lightgreen';
+        setTimeout(() => window.location.href = 'login.html', 1500);
+      } else {
+        messageEl.textContent = data.error || 'Signup failed';
+        messageEl.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>

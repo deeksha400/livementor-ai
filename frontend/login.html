@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LiveMentor - Log In</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Log In</h2>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit">Log In</button>
+  </form>
+  <p id="message"></p>
+  <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const response = await fetch('http://127.0.0.1:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+      const messageEl = document.getElementById('message');
+
+      if (response.ok) {
+        messageEl.textContent = `Welcome, ${data.name}! Redirecting...`;
+        messageEl.style.color = 'lightgreen';
+        localStorage.setItem('user', JSON.stringify(data));
+        setTimeout(() => window.location.href = 'room.html', 1500);
+      } else {
+        messageEl.textContent = data.error || 'Login failed';
+        messageEl.style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>
