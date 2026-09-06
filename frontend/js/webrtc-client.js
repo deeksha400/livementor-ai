@@ -1,10 +1,12 @@
 const socket = io("http://localhost:5000");
-const room = "session-101";
+const room = localStorage.getItem('roomCode') || "session-101";
 const myId = Math.random().toString(36).substring(2, 8);
 
 let localStream;
 let peerConnection;
 let isCaller = false;
+let mediaRecorder;
+let recordedChunks = [];
 
 const config = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
@@ -29,6 +31,20 @@ socket.on("user-joined", async () => {
 async function startCall() {
   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   localVideo.srcObject = localStream;
+  
+   // Start recording audio for later transcription
+  recordedChunks = [];
+  const audioOnlyStream = new MediaStream(localStream.getAudioTracks());
+  let recorderOptions = { mimeType: 'audio/webm;codecs=opus' };
+  if (!MediaRecorder.isTypeSupported(recorderOptions.mimeType)) {
+    recorderOptions = {};
+  }
+  mediaRecorder = new MediaRecorder(audioOnlyStream, recorderOptions);
+  mediaRecorder.ondataavailable = (event) => {
+    if (event.data.size > 0) recordedChunks.push(event.data);
+  };
+  mediaRecorder.start();
+
 
   peerConnection = new RTCPeerConnection(config);
   localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -72,7 +88,15 @@ socket.on("signal", async (data) => {
   }
 });
 
+
 function hangUp() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+    mediaRecorder.onstop = () => {
+      const audioBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+      uploadRecording(audioBlob);
+    };
+  }
   if (peerConnection) {
     peerConnection.close();
     peerConnection = null;
@@ -84,4 +108,23 @@ function hangUp() {
   remoteVideo.srcObject = null;
   isCaller = false;
   socket.emit("leave", { room, sid_name: myId });
+}
+
+
+async function uploadRecording(audioBlob) {
+  const formData = new FormData();
+  formData.append('audio', audioBlob, 'session-recording.webm');
+  formData.append('room', room);
+
+  try {
+    const response = await fetch('http://127.0.0.1:5000/upload-recording', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    console.log('Recording uploaded:', data);
+    alert('Session recording saved! Processing summary...');
+  } catch (err) {
+    console.error('Failed to upload recording:', err);
+  }
 }

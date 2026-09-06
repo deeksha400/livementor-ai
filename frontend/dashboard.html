@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LiveMentor - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2 id="welcome"></h2>
+
+  <div id="tutorView" style="display:none;">
+    <button id="createSessionBtn">Create New Session</button>
+    <p id="roomCodeDisplay"></p>
+  </div>
+
+  <div id="studentView" style="display:none;">
+    <input type="text" id="roomCodeInput" placeholder="Enter Room Code">
+    <button id="joinSessionBtn">Join Session</button>
+  </div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('welcome').textContent = `Welcome, ${user.name} (${user.role})`;
+
+    if (user.role === 'tutor') {
+      document.getElementById('tutorView').style.display = 'block';
+    } else {
+      document.getElementById('studentView').style.display = 'block';
+    }
+
+    document.getElementById('createSessionBtn').onclick = () => {
+      const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      document.getElementById('roomCodeDisplay').textContent = `Share this code: ${roomCode}`;
+      localStorage.setItem('roomCode', roomCode);
+      setTimeout(() => window.location.href = 'room.html', 2000);
+    };
+
+    document.getElementById('joinSessionBtn').onclick = () => {
+      const code = document.getElementById('roomCodeInput').value.trim();
+      if (code) {
+        localStorage.setItem('roomCode', code);
+        window.location.href = 'room.html';
+      }
+    };
+  </script>
+</body>
+</html>

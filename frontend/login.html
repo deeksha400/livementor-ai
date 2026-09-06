@@ -33,7 +33,7 @@
         messageEl.textContent = `Welcome, ${data.name}! Redirecting...`;
         messageEl.style.color = 'lightgreen';
         localStorage.setItem('user', JSON.stringify(data));
-        setTimeout(() => window.location.href = 'room.html', 1500);
+        setTimeout(() => window.location.href = 'dashboard.html', 1500);
       } else {
         messageEl.textContent = data.error || 'Login failed';
         messageEl.style.color = 'red';

@@ -4,6 +4,7 @@ from flask_cors import CORS
 from models import db, User, Session
 from dotenv import load_dotenv
 import os
+import uuid
 
 load_dotenv()
 
@@ -62,6 +63,22 @@ def login():
         'name': user.name,
         'role': user.role
     }), 200
+
+UPLOAD_FOLDER = 'recordings'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.route('/upload-recording', methods=['POST'])
+def upload_recording():
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+
+    audio_file = request.files['audio']
+    room = request.form.get('room', 'unknown')
+    filename = f"{uuid.uuid4()}.webm"
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    audio_file.save(filepath)
+
+    return jsonify({'message': 'Recording saved', 'filename': filename}), 200
 
 
 rooms = {}
