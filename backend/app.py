@@ -5,10 +5,14 @@ from models import db, User, Session
 from dotenv import load_dotenv
 import os
 import uuid
+import whisper
 
 load_dotenv()
 
 app = Flask(__name__)
+print("Loading Whisper model... this may take a moment")
+whisper_model = whisper.load_model("base")
+print("Whisper model loaded!")
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 db_password = os.getenv('DB_PASSWORD')
@@ -67,6 +71,7 @@ def login():
 UPLOAD_FOLDER = 'recordings'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 @app.route('/upload-recording', methods=['POST'])
 def upload_recording():
     if 'audio' not in request.files:
@@ -78,8 +83,22 @@ def upload_recording():
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     audio_file.save(filepath)
 
-    return jsonify({'message': 'Recording saved', 'filename': filename}), 200
+    # Transcribe using Whisper
+    try:
+        result = whisper_model.transcribe(filepath)
+        transcript = result['text']
+    except Exception as e:
+        return jsonify({'error': f'Transcription failed: {str(e)}'}), 500
 
+    # Save transcript to the Session table
+    session_record = Session(room_code=room, transcript=transcript)
+    db.session.add(session_record)
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Recording saved and transcribed',
+        'transcript': transcript
+    }), 200
 
 rooms = {}
 
